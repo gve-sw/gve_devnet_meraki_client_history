@@ -9,6 +9,7 @@ This program is designed to interact with the Meraki Dashboard API to fetch, log
 * Meraki Dashboard API
 
 ## Prerequisites
+
 #### Meraki API Keys
 In order to use the Meraki API, you need to enable the API for your organization first. After enabling API access, you can generate an API key. Follow these instructions to enable API access and generate an API key:
 1. Login to the Meraki dashboard
@@ -22,42 +23,46 @@ In order to use the Meraki API, you need to enable the API for your organization
 
 > Note: You can add your account as Full Organization Admin to your organizations by following the instructions [here](https://documentation.meraki.com/General_Administration/Managing_Dashboard_Access/Managing_Dashboard_Administrators_and_Permissions).
 
+
 #### Meraki Organization Name
 To utilize the program, you need to acquire your Meraki Org name:
 1. Login to the Meraki dashboard.
 2. Navigate to Organization > Settings.
 3. Copy and save the Organization Name.
+4. Alternatively go to: https://api.meraki.com/api/v0/organizations after logging in.
 
+#### Environment Variables Setup
+For ease of configuration and better security, this application uses a `.env` file.
+```env
+MERAKI_API_KEY=your_meraki_api_key
+MERAKI_ORG_NAME=your_meraki_org_name
+REPORT_ORG_WIDE=True
+REPORT_BY_NETWORK=True
+EXCEL=True
+TIMESPAN_IN_SECONDS=desired_timespan_for_reports
+
+```
+ 1. Update MERAKI_API_KEY with your Meraki API key
+      * Note that if your org name contains spaces, use single quotes. i.e. MERAKI_ORG_NAME='My Org'
+   2. Update MERAKI_ORG_NAME with your meraki Organization name
+   3. Set the flags in `.env` based on desired program output:
+      * Set `REPORT_ORG_WIDE` to True in the `.env` file to generate an Excel report with all devices in organization in one sheet.
+      * Set `REPORT_BY_NETWORK` to True in the `.env` file to generate an Excel report where each Worksheet is a network in the organization. 
+      * If you'd like to export the report to Excel, set the `EXCEL` flag in the `.env` file, otherwise the program will only output to console.
+      * Set the desired timespan for the report in seconds. If not timespan is set, it will default to 86400 (1 day). Max is 31 days.
 
 ## Installation/Configuration
-1. Clone this repository with `git clone gve_devnet_meraki_client_history`
+
+1. Clone this repository with `git clone https://wwwin-github.cisco.com/gve/gve_devnet_meraki_client_history.git`
 2. Set up a Python virtual environment. Make sure Python 3 is installed in your environment, and if not, you may download Python [here](https://www.python.org/downloads/). Once Python 3 is installed in your environment, you can activate the virtual environment with the instructions found [here](https://docs.python.org/3/tutorial/venv.html).
-3. Add Meraki API key & Organizaiton Name to environment variables:
-```bash
-export MERAKI_API_KEY='YOUR_MERAKI_API_KEY'
-export MERAKI_ORG_NAME='YOUR_MERAKI_ORG_NAME'
-```
+3. Set up your `.env` file (see Environment Variables Setup above).
 4. Install the requirements with `pip3 install -r requirements.txt`
-
-### Flags
-In the helper_functions.py, configure which Excel reports to generate. If both flags are set to false, output will only be seen in app.log:
-
-* To generate a Excel report with client history for all devices in the organization in a singluar worksheet:
-    * Set EXCEL_REPORT_1 = True
-* To generate an Excel report with client history where each network is a worksheet:
-    * Set EXCEL_REPORT_2 = True
-
 
 ## Usage
 To run the program, use the command:
 ```
 $ python3 app.py
 ```
-
-
-### Rate Limiting
-The program includes a rate-limiting mechanism to prevent excessive API calls in a short span, ensuring adherence to Meraki's API rate limits. Rate limiting prevents potential bans or timeouts from the API. Adjust the RATE_LIMIT_PAUSE and MAX_RETRIES parameters as per your requirements and Meraki's guidelines.
-
 
 # Screenshots
 

@@ -1,5 +1,5 @@
 """
-Copyright (c) 2022 Cisco and/or its affiliates.
+Copyright (c) 2023 Cisco and/or its affiliates.
 
 This software is licensed to you under the terms of the Cisco Sample
 Code License, Version 1.1 (the "License"). You may obtain a copy of the
@@ -14,41 +14,30 @@ writing, software distributed under the License is distributed on an "AS
 IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
 or implied.
 """
-
 import meraki
+
 from helper_functions import (
-    setup,
-    get_env_variables,
+    LoggerManager,
     get_org_id_by_name,
     run_report_1,
     run_report_2,
-    close_logger,
-    RATE_LIMIT_PAUSE,
-    MAX_RETRIES,
-    TIMESPAN_IN_SECONDS,
-    EXCEL_REPORT_1,
-    EXCEL_REPORT_2
+    EnvironmentManager
 )
 
 if __name__ == "__main__":
     # Set up logging
-    logger = setup()
+    logger_manager = LoggerManager()
 
     # Fetch required environment variables
-    API_KEY, ORGANIZATION_NAME = get_env_variables()
+    EnvironmentManager.validate_env_variables()  # Validate environment variables at startup
 
     # Initialize Meraki Dashboard API
-    dashboard = meraki.DashboardAPI(API_KEY)
+    dashboard = meraki.DashboardAPI(EnvironmentManager.MERAKI_API_KEY)
 
     # Fetch organization ID based on its name
-    org_id = get_org_id_by_name(dashboard, ORGANIZATION_NAME, logger)
+    org_id = get_org_id_by_name(dashboard, EnvironmentManager.MERAKI_ORG_NAME, logger_manager)
 
-    # Run Reports
-    run_report_1(dashboard, org_id, logger, RATE_LIMIT_PAUSE, MAX_RETRIES, TIMESPAN_IN_SECONDS, EXCEL_REPORT_1)
-    run_report_2(dashboard, org_id, logger, RATE_LIMIT_PAUSE, MAX_RETRIES, TIMESPAN_IN_SECONDS, EXCEL_REPORT_2)
+    # Run Reports based on flags set in .env
 
-    # Logging script completion message
-    logger.info("Script completed successfully!")
-
-    # Close logger handlers
-    close_logger(logger)
+    run_report_1(dashboard, org_id, logger_manager, EnvironmentManager.TIMESPAN_IN_SECONDS, EnvironmentManager.REPORT_ORG_WIDE, EnvironmentManager.EXCEL)
+    run_report_2(dashboard, org_id, logger_manager, EnvironmentManager.TIMESPAN_IN_SECONDS, EnvironmentManager.REPORT_BY_NETWORK, EnvironmentManager.EXCEL)
