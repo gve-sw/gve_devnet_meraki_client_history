@@ -17,27 +17,26 @@ or implied.
 import meraki
 
 from helper_functions import (
+    EnvironmentManager,
     LoggerManager,
-    get_org_id_by_name,
+    get_org_id,
     run_report_1,
     run_report_2,
-    EnvironmentManager
 )
 
 if __name__ == "__main__":
     # Set up logging
     logger_manager = LoggerManager()
 
-    # Fetch required environment variables
-    EnvironmentManager.validate_env_variables()  # Validate environment variables at startup
+    # Fetch required / Validate environment variables at startup
+    EnvironmentManager.validate_env_variables()
 
     # Initialize Meraki Dashboard API
     dashboard = meraki.DashboardAPI(EnvironmentManager.MERAKI_API_KEY)
 
-    # Fetch organization ID based on its name
-    org_id = get_org_id_by_name(dashboard, EnvironmentManager.MERAKI_ORG_NAME, logger_manager)
+    # Fetch organization ID
+    org_id = get_org_id(dashboard, logger_manager)
 
     # Run Reports based on flags set in .env
-
     run_report_1(dashboard, org_id, logger_manager, EnvironmentManager.TIMESPAN_IN_SECONDS, EnvironmentManager.REPORT_ORG_WIDE, EnvironmentManager.EXCEL)
     run_report_2(dashboard, org_id, logger_manager, EnvironmentManager.TIMESPAN_IN_SECONDS, EnvironmentManager.REPORT_BY_NETWORK, EnvironmentManager.EXCEL)

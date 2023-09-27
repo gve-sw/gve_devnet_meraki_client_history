@@ -9,6 +9,9 @@ from rich import print as rprint
 from rich.console import Console
 from rich.table import Table
 from dotenv import load_dotenv
+from meraki.exceptions import APIError
+import sys
+from rich.prompt import Prompt
 
 # Load environment variables from .env file
 load_dotenv()
@@ -21,7 +24,6 @@ class EnvironmentManager:
 
     Attributes:
         MERAKI_API_KEY (str): API key for accessing Meraki.
-        MERAKI_ORG_NAME (str): Organization NAME for the Meraki API.
         REPORT_ORG_WIDE (bool): Flag to output client history by organization.
         REPORT_BY_NETWORK (bool): Flag to output client history by network.
         EXCEL (bool): Flag to create Excel report output.
@@ -32,7 +34,6 @@ class EnvironmentManager:
     """
 
     MERAKI_API_KEY = os.getenv('MERAKI_API_KEY')
-    MERAKI_ORG_NAME = os.getenv('MERAKI_ORG_NAME')
     REPORT_ORG_WIDE = os.getenv('REPORT_ORG_WIDE', "False").lower() == "true"  # Default to false if left blank
     REPORT_BY_NETWORK = os.getenv('REPORT_BY_NETWORK', "False").lower() == "true"  # Default to false if left blank
     EXCEL = os.getenv('EXCEL', "False").lower() == "true"  # Default to false if left blank
@@ -54,7 +55,7 @@ class EnvironmentManager:
             if "os" in var_name or "__" in var_name or isinstance(var_value, classmethod):  # ignore class documentation & methods
                 continue
             table.add_row(var_name, str(var_value) if var_value is not None else "Not Set")
-            if var_value in ("", None) and var_name != "TIMESPAN_IN_SECONDS":  # Exclude TIMESPAN_IN_SECONDS from this check
+            if var_value in ("", None) and var_name not in ["TIMESPAN_IN_SECONDS"]:
                 missing_vars.append(var_name)
 
         # Display the table
@@ -157,19 +158,42 @@ class LoggerManager:
         self.restore_logging()
 
 
-def get_org_id_by_name(dashboard, organization_name, logger_manager):
+def get_org_id(dashboard, logger_manager):
     """
-    Fetch the organization ID based on its name. Exit the script if not found.
+    Fetch the org ID based on org name, or prompt the user to select
+    an organization if the name is left blank or is invalid. If there is only one
+    organization, it selects that organization automatically. Exits the script if
+    the organization is not found or if there's an error fetching the organizations.
     """
+    console = Console()
+    with console.status("Initializing Meraki Dashboard...."):
+        try:
+            console.status("Fetching Meraki Organizations....")
+            orgs = dashboard.organizations.getOrganizations()
+        except APIError as e:
+            logger_manager.logger.error(f"Failed to fetch organizations. Error: {e.message['errors'][0]}")
+            sys.exit(1)
+    console.print("[bold bright_green]Connected to Meraki dashboard!")
+    print(f"Found {len(orgs)} organization(s).\r\n")
 
-    try:
-        orgs = dashboard.organizations.getOrganizations()
-        for org in orgs:
-            if org['name'] == organization_name:
-                return org['id']
-    except Exception as e:
-        logger_manager.logger.error(f"Failed to fetch organizations. Error: {e}")
-        exit(1)
+    # If one org, return early
+    if len(orgs) == 1:
+        print(f"Working with Org: {orgs[0]['name']}")
+        return orgs[0]["id"]
+
+    org_names = [org["name"] for org in orgs]
+    print("Available organizations:")
+    for org in orgs:
+        console.print(f"- {org['name']}")
+    console.print("[bold red]\nNote: Meraki organization names are case sensitive")
+    selection = Prompt.ask(
+        "Which organization should we use?", choices=org_names, show_choices=False
+    )
+    organization_name = selection  # Update organization_name with the user's selection
+
+    for org in orgs:
+        if org["name"] == organization_name:
+            return org["id"]
 
     logger_manager.logger.error(f"Organization with name '{organization_name}' not found.")
     exit(1)
@@ -328,3 +352,5 @@ def run_report_2(dashboard, org_id, logger_manger, timespan, report, excel):
             logger_manger.logger.info("Excel report (Report 2) generated!")
         return True
     return False
+
+
