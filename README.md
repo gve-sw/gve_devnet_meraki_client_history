@@ -1,5 +1,5 @@
 # gve_devnet_meraki_client_history
-This program is designed to interact with the Meraki Dashboard API to fetch, log, and export data about client history devices and networks within an organization.
+This program is designed to interact with the Meraki Dashboard API to obtain, analyze, and manage data associated with client history, devices, and networks within an organization’s infrastructure.
 
 
 ## Contacts
@@ -28,19 +28,12 @@ Follow these instructions to enable API access and generate an API key:
 For ease of configuration and better security, this application uses a `.env` file. Create a `.env` file in the root directory of your project and add the following entries:
 ```env
 MERAKI_API_KEY=your_meraki_api_key
-REPORT_ORG_WIDE=True
-REPORT_BY_NETWORK=True
 EXCEL=True
 TIMESPAN_IN_SECONDS=desired_timespan_for_reports
+LOGGER_LEVEL=CRITICAL
 ```
-
-#### Flags
-Set the flags in `.env` based on desired program output:
-
-* Set `REPORT_ORG_WIDE` to True in the `.env` file to generate an Excel report with all devices in organization in one sheet.
-* Set `REPORT_BY_NETWORK` to True in the `.env` file to generate an Excel report where each Worksheet is a network in the organization. 
-* If you'd like to export the report to Excel, set the `EXCEL` flag in the `.env` file, otherwise the program will only output to console.
 * Note, if no value is set for timespan in .env, it will default to 1 day. 
+* Optionally, set LOGGER_LEVEL: Warning, Info, Critical, Debug, etc.
 
 ## Installation/Configuration
 1. Clone this repository with `git clone https://wwwin-github.cisco.com/gve/gve_devnet_meraki_client_history.git`
@@ -50,26 +43,114 @@ Set the flags in `.env` based on desired program output:
 
 
 ## Usage
-To run the program, use the command:
+
+### Running Locally
+Run the program:
+```shell
+python app.py
 ```
-$ python3 app.py
+
+### Running with Docker (Containerized)
+
+Ensure Docker is installed and running, then build and run the Docker container as follows:
+
+#### Build
+Build the Docker image using the provided Dockerfile.
+```shell
+docker build -t meraki_client_history:v1 .
+```
+
+#### Run
+Run the Docker container from the built image. You can also add flags as required, just like when running the script directly.
+```shell
+docker run -it --name meraki_client_history_prod -v /your_local_path/for_reports:/app/reports meraki_client_history:v1 [flags]
+```
+* Replace /your_local_path/for_reports with the path where you want to store your Excel report on local machine. 
+
+Examples of running the containerized app with different flags:
+- Without additional flags:
+  ```shell
+  docker run -it --name meraki_client_history_prod -v /your_local_path/for_reports:/app/reports meraki_client_history:v1
+  ```
+- With flags:
+  ```shell
+  docker run -it --name meraki_client_history_prod -v /your_local_path/for_reports:/app/reports meraki_client_history:v1 -o wireless --raw
+  ```
+
+#### Stop and Remove
+After the usage, if you want to stop and remove the container, use:
+```shell
+docker stop meraki_client_history_prod
+docker rm meraki_client_history_prod 
+```
+
+#### Re-run
+If you need to re-run the script with different flags, ensure you stop and remove the existing container as described above, and then issue the `docker run` command again with new flags.
+
+### Flags
+
+- `-o, --option` (Required): Specify the product type. Available options:
+    - `all`: For all products.
+    - `wired`: For wired products.
+    - `wireless`: For wireless products.
+
+- `--raw`: (Optional) If present, export all raw data.
+
+## Examples of Use
+```shell
+python app.py -o [option] [--raw]
+```
+
+1. To generate a filtered report for wired and wireless clients:
+
+```shell
+python app.py
+```
+or
+```shell
+python app.py -o all
+```
+
+2. To generate a report specifically for wireless clients with filtered data:
+```shell
+python app.py -o wireless
+```
+
+3. To generate a report specifically for wired clients with filtered data:
+```shell
+python app.py -o wired
+```
+
+5. To generate a report for wireless and wired clients with filtered data:
+```shell
+python app.py -o wireless
+```
+
+6. To generate a report with raw data from API call, use the "--raw" flag.
+```shell
+python app.py -o wireless --raw
 ```
 
 Note: If the user has access to multiple Meraki organizations, a list of available orgs will be displayed, and the user prompted enter
 
-
 # Screenshots
 **High-level design:**
-![Process Flowchart](/IMAGES/process_flowchart.png)<br>
+![process_flowchart](/IMAGES/process_flowchart.png)<br>
 
 **Console Output:**
-![CLI](/IMAGES/CLI.png)<br>
+![console](/IMAGES/console.png)<br>
 
-**Report 1:**
-![Report1](/IMAGES/Report1.png)<br>
+**Console Report Filtered:**
+![console_report_filtered](/IMAGES/console_report_filtered.png)<br>
 
-**Report 2:**
-![Report2](/IMAGES/Report2.png)<br><br>
+**Console Report Unfiltered:**
+![console_report_unfiltered](/IMAGES/console_report_unfiltered.png)<br>
+
+**Excel Report Filtered:**
+![filtered_excel_report](/IMAGES/excel_report_filtered.png)<br>
+
+**Excel Report Unfiltered:**
+![unfiltered_excel_report](/IMAGES/excel_report_unfiltered.png)<br><br>
 
 ![/IMAGES/0image.png](/IMAGES/0image.png)
 ### LICENSE

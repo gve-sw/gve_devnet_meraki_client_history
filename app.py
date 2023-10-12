@@ -15,28 +15,53 @@ IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
 or implied.
 """
 import meraki
+from rich.panel import Panel
 
-from helper_functions import (
+from funcs import (
     EnvironmentManager,
     LoggerManager,
+    ArgumentParserManager,
+    InvalidArgumentsError,
     get_org_id,
-    run_report_1,
-    run_report_2,
+    run_report,
 )
 
-if __name__ == "__main__":
-    # Set up logging
-    logger_manager = LoggerManager()
+# Instantiate custom logger
+logger_manager = LoggerManager()
 
-    # Fetch required / Validate environment variables at startup
+
+def main():
+
+    # Title Panel
+    logger_manager.console.print(Panel.fit("[bold bright_green]MERAKI WIRELESS CLIENT REPORT[/bold bright_green]"))
+
+    # Argument Parsing
+    try:
+        product_type, raw_data = ArgumentParserManager.parse_arguments(logger_manager)
+    except InvalidArgumentsError as e:
+        logger_manager.logger.error(str(e))
+        return
+
+    #  Step 1: Retrieve and Validate Environment Variables
     EnvironmentManager.validate_env_variables()
 
     # Initialize Meraki Dashboard API
-    dashboard = meraki.DashboardAPI(EnvironmentManager.MERAKI_API_KEY)
+    logger_manager.console.print(Panel.fit("[bold bright_green]Connect to Meraki Dashboard[/bold bright_green]", title="Step 2"))
+    dashboard = meraki.DashboardAPI(api_key=EnvironmentManager.MERAKI_API_KEY, suppress_logging=True)
 
     # Fetch organization ID
     org_id = get_org_id(dashboard, logger_manager)
 
-    # Run Reports based on flags set in .env
-    run_report_1(dashboard, org_id, logger_manager, EnvironmentManager.TIMESPAN_IN_SECONDS, EnvironmentManager.REPORT_ORG_WIDE, EnvironmentManager.EXCEL)
-    run_report_2(dashboard, org_id, logger_manager, EnvironmentManager.TIMESPAN_IN_SECONDS, EnvironmentManager.REPORT_BY_NETWORK, EnvironmentManager.EXCEL)
+    # Run Report
+    run_report(dashboard, org_id, product_type, logger_manager, EnvironmentManager.TIMESPAN_IN_SECONDS, EnvironmentManager.EXCEL, raw_data)
+
+    logger_manager.console.print(Panel.fit("[bold bright_green]Script Complete.[/bold bright_green]"))
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\n")
+        logger_manager.console.print(Panel.fit("Shutting down...", title="[bright_red]Script Exited[/bright_red]"))
+
