@@ -5,12 +5,13 @@ This program is designed to interact with the Meraki Dashboard API to obtain, an
 ## Contacts
 * Mark Orszycki
 
+
 ## Solution Components
 * Meraki Dashboard API
 
-## Prerequisites
 
-#### Meraki API Keys
+## Prerequisites
+### Meraki API Keys
 Follow these instructions to enable API access and generate an API key:
 1. Login to the Meraki dashboard
 2. In the left-hand menu, navigate to `Organization > Settings > Dashboard API access`
@@ -23,8 +24,7 @@ Follow these instructions to enable API access and generate an API key:
 
 > Note: You can add your account as Full Organization Admin to your organizations by following the instructions [here](https://documentation.meraki.com/General_Administration/Managing_Dashboard_Access/Managing_Dashboard_Administrators_and_Permissions).
 
-
-#### Environment Variables Setup
+### Environment Variables Setup
 For ease of configuration and better security, this application uses a `.env` file. Create a `.env` file in the root directory of your project and add the following entries:
 ```env
 MERAKI_API_KEY=your_meraki_api_key
@@ -36,56 +36,17 @@ LOGGER_LEVEL=CRITICAL
 * Optionally, set LOGGER_LEVEL: Warning, Info, Critical, Debug, etc.
 
 ## Installation/Configuration
-1. Clone this repository with `git clone https://wwwin-github.cisco.com/gve/gve_devnet_meraki_client_history.git`
-2. Set up a Python virtual environment. Make sure Python 3 is installed in your environment, and if not, you may download Python [here](https://www.python.org/downloads/). Once Python 3 is installed in your environment, you can activate the virtual environment with the instructions found [here](https://docs.python.org/3/tutorial/venv.html).
+### With Docker
+1. Clone this repository with `git clone https://wwwin-github.cisco.com/gve/gve_devnet_meraki_client_history.git`.
+2. Set up your `.env` file as per the instructions above.
+
+**Note:** If you haven't installed Docker or Docker Compose, you will need to do so. Follow the instructions on the [Docker website](https://docs.docker.com/get-docker/) to get started.
+
+### Optional: Running Locally Without Docker
+1. Clone this repository with `git clone https://wwwin-github.cisco.com/gve/gve_devnet_meraki_client_history.git`.
+2. Set up a Python virtual environment. Make sure Python 3 is installed in your environment, and if not, you may download Python [here](URL_to_download_Python). Once Python 3 is installed in your environment, you can activate the virtual environment with the instructions found [here](URL_to_virtual_environment_instructions).
 3. Set up your `.env` file as per the instructions above.
-4. Install the requirements with `pip3 install -r requirements.txt`
-
-
-## Usage
-
-### Running Locally
-Run the program:
-```shell
-python app.py
-```
-
-### Running with Docker (Containerized)
-
-Ensure Docker is installed and running, then build and run the Docker container as follows:
-
-#### Build
-Build the Docker image using the provided Dockerfile.
-```shell
-docker build -t meraki_client_history:v1 .
-```
-
-#### Run
-Run the Docker container from the built image. You can also add flags as required, just like when running the script directly.
-```shell
-docker run -it --name meraki_client_history_prod -v /your_local_path/for_reports:/app/reports meraki_client_history:v1 [flags]
-```
-* Replace /your_local_path/for_reports with the path where you want to store your Excel report on local machine. 
-
-Examples of running the containerized app with different flags:
-- Without additional flags:
-  ```shell
-  docker run -it --name meraki_client_history_prod -v /your_local_path/for_reports:/app/reports meraki_client_history:v1
-  ```
-- With flags:
-  ```shell
-  docker run -it --name meraki_client_history_prod -v /your_local_path/for_reports:/app/reports meraki_client_history:v1 -o wireless --raw
-  ```
-
-#### Stop and Remove
-After the usage, if you want to stop and remove the container, use:
-```shell
-docker stop meraki_client_history_prod
-docker rm meraki_client_history_prod 
-```
-
-#### Re-run
-If you need to re-run the script with different flags, ensure you stop and remove the existing container as described above, and then issue the `docker run` command again with new flags.
+4. Install the requirements with `pip3 install -r requirements.txt`.
 
 ### Flags
 
@@ -96,37 +57,53 @@ If you need to re-run the script with different flags, ensure you stop and remov
 
 - `--raw`: (Optional) If present, export all raw data.
 
-## Examples of Use
+## Usage
+### Running with Docker (Containerized)
+Once installation and configuration is complete, run the application using Docker Compose as follows:
 ```shell
-python app.py -o [option] [--raw]
+docker-compose run meraki_client_history [flags]
+```
+Replace `[flags]` with any of the flags described below.
+
+#### Examples of running the containerized app with different flags:
+1. To generate a filtered report for wired clients:
+```shell
+docker-compose run meraki_client_history -o wired
+```
+2. To generate a filtered report for wireless clients:
+```shell
+docker-compose run meraki_client_history -o wireless
+``` 
+3. To generate a filtered report for wired and wireless clients:
+```shell
+docker-compose run meraki_client_history -o all 
+```
+4. To generate a filtered report for wired and wireless clients with unfiltered API response data:
+```shell
+docker-compose run meraki_client_history -o all --raw
+```
+
+
+### Running Locally
+Once installation and configuration is complete, if you chose to use your local installation of python (instead of container), run the application using:
+
+```shell
+python app.py -o [flags]
 ```
 
 1. To generate a filtered report for wired and wireless clients:
-
-```shell
-python app.py
-```
-or
 ```shell
 python app.py -o all
 ```
-
 2. To generate a report specifically for wireless clients with filtered data:
 ```shell
 python app.py -o wireless
 ```
-
 3. To generate a report specifically for wired clients with filtered data:
 ```shell
 python app.py -o wired
 ```
-
-5. To generate a report for wireless and wired clients with filtered data:
-```shell
-python app.py -o wireless
-```
-
-6. To generate a report with raw data from API call, use the "--raw" flag.
+4. To generate a report with raw data from API call, use the "--raw" flag.
 ```shell
 python app.py -o wireless --raw
 ```

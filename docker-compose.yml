@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  meraki_client_history:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: meraki_client_history:v1
+    container_name: meraki_client_history_prod
+    command:
+      - "-o wireless" # Default flags for the container. Change as needed.
+    volumes:
+      - ${PWD}:/app/reports

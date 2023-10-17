@@ -192,6 +192,7 @@ class ArgumentParserManager:
 
         return product_type, raw_data
 
+
 def get_oui_from_mac(mac_address):
     """
     Get the Organizationally Unique Identifier (OUI) from a MAC address.
