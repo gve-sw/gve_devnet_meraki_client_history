@@ -25,7 +25,7 @@ Follow these instructions to enable API access and generate an API key:
 > Note: You can add your account as Full Organization Admin to your organizations by following the instructions [here](https://documentation.meraki.com/General_Administration/Managing_Dashboard_Access/Managing_Dashboard_Administrators_and_Permissions).
 
 ### Environment Variables Setup
-For ease of configuration and better security, this application uses a `.env` file. Create a `.env` file in the root directory of your project and add the following entries:
+For ease of configuration and better security, this application uses a `.env` variables. Update them in the docker-compose.yml appropriately.
 ```env
 MERAKI_API_KEY=your_meraki_api_key
 EXCEL=True
@@ -37,50 +37,50 @@ LOGGER_LEVEL=CRITICAL
 
 ## Installation/Configuration
 ### With Docker
-1. Clone this repository with `git clone https://wwwin-github.cisco.com/gve/gve_devnet_meraki_client_history.git`.
-2. Set up your `.env` file as per the instructions above.
+1. Clone this repository with `git clone https://github.com/gve-sw/gve_devnet_meraki_client_history.git`.
+2. Set up your environment variables in docker-compose.yml per the instructions above.
 
 **Note:** If you haven't installed Docker or Docker Compose, you will need to do so. Follow the instructions on the [Docker website](https://docs.docker.com/get-docker/) to get started.
 
 ### Optional: Running Locally Without Docker
-1. Clone this repository with `git clone https://wwwin-github.cisco.com/gve/gve_devnet_meraki_client_history.git`.
+1. Clone this repository with `git clone https://github.com/gve-sw/gve_devnet_meraki_client_history.git`.
 2. Set up a Python virtual environment. Make sure Python 3 is installed in your environment, and if not, you may download Python [here](URL_to_download_Python). Once Python 3 is installed in your environment, you can activate the virtual environment with the instructions found [here](URL_to_virtual_environment_instructions).
 3. Set up your `.env` file as per the instructions above.
 4. Install the requirements with `pip3 install -r requirements.txt`.
 
 ### Flags
 
-- `-o, --option` (Required): Specify the product type. Available options:
-    - `all`: For all products.
-    - `wired`: For wired products.
-    - `wireless`: For wireless products.
+- `-o, --option` (Required): Specify the client type. Available options:
+    - `all`: For all clients.
+    - `wired`: For wired clients.
+    - `wireless`: For wireless clients.
 
 - `--raw`: (Optional) If present, export all raw data.
 
 ## Usage
 ### Running with Docker (Containerized)
-Once installation and configuration is complete, run the application using Docker Compose as follows:
+Once installation and configuration is complete, run the application using Docker Compose as follows (use --rm to auto remove container):
 ```shell
-docker-compose run meraki_client_history [flags]
+docker-compose run --rm meraki_client_history [flags]
 ```
 Replace `[flags]` with any of the flags described below.
 
 #### Examples of running the containerized app with different flags:
 1. To generate a filtered report for wired clients:
 ```shell
-docker-compose run meraki_client_history -o wired
+docker-compose run --rm meraki_client_history -o wired
 ```
 2. To generate a filtered report for wireless clients:
 ```shell
-docker-compose run meraki_client_history -o wireless
+docker-compose run --rm meraki_client_history -o wireless
 ``` 
 3. To generate a filtered report for wired and wireless clients:
 ```shell
-docker-compose run meraki_client_history -o all 
+docker-compose run --rm meraki_client_history -o all 
 ```
 4. To generate a filtered report for wired and wireless clients with unfiltered API response data:
 ```shell
-docker-compose run meraki_client_history -o all --raw
+docker-compose run --rm meraki_client_history -o all --raw
 ```
 
 

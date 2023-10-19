@@ -2,11 +2,17 @@ version: '3'
 
 services:
   meraki_client_history:
+    container_name: meraki_client_history_prod
     build:
       context: .
       dockerfile: Dockerfile
     image: meraki_client_history:v1
-    container_name: meraki_client_history_prod
+    environment:
+      - NAME=Meraki_Client_History
+      - MERAKI_API_KEY=
+      - EXCEL=True
+      - TIMESPAN_IN_SECONDS=2592000
+      - LOGGER_LEVEL=CRITICAL
     command:
       - "-o wireless" # Default flags for the container. Change as needed.
     volumes:
